@@ -1,0 +1,75 @@
+﻿@page "/person"
+@using System.ComponentModel.DataAnnotations
+@rendermode InteractiveServer
+
+<PageTitle>Person</PageTitle>
+
+
+<EditForm Model="@formModel" OnValidSubmit="@HandleOnValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <h1>@person.Name</h1>
+
+    <div class="form-group row mb-3">
+        <label class="col-md-2 col-form-label">Slary <span class="text-danger">*</span></label>
+        <label class="col-md-2 col-form-label" data-test="DisplayedSalary">@person.Salary</label>
+    </div>
+
+    <div class="form-group row mb-3">
+        <label class="col-md-2 col-form-label">Salary increase percentage: <span class="text-danger">*</span></label>
+        <div class="col-md-10">
+            <InputNumber @bind-Value="@formModel.SalaryIncreasePercentage" Placeholder="Enter a percentage value" data-test="SalaryIncreasePercentageInput" />
+            <ValidationMessage For="@(() => formModel.SalaryIncreasePercentage)" />
+        </div>
+    </div>
+
+    <Button Color="ButtonColor.Primary" Type="ButtonType.Submit" data-test="SalaryIncreaseSubmitButton">Submit</Button>
+</EditForm>
+
+@code {
+
+    private FormModel formModel = new();
+
+    private EditContext? editContext;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(formModel);
+        base.OnInitialized();
+    }
+
+    private DatesAndStuff.Person person = new DatesAndStuff.Person("Testelini Testelina",
+                    new EmploymentInformation(5000, new Employer("RO12312312", "Verdici", "Testelono Testeliniii", null)),
+                    new UselessPaymentService(),
+                    new LocalTaxData("Tivoli"),
+                    new FoodPreferenceParams() { CanEatChocolate = true, CanEatGluten = false });
+
+    public void HandleOnValidSubmit()
+    {
+        try
+        {
+            // additional check
+            if (editContext.Validate())
+            {
+                // do something
+                // submit the form
+                Console.WriteLine($"Trying to increase salary by {formModel.SalaryIncreasePercentage}.");
+                person.IncreaseSalary(formModel.SalaryIncreasePercentage);
+            }
+        }
+        catch
+        {
+            Console.WriteLine($"Trying to increase salary by {formModel.SalaryIncreasePercentage} failed.");
+        }
+
+    }
+
+
+    public class FormModel
+    {
+        [Required(ErrorMessage = "Percentage should be specified")]
+        [Range(-10d, Double.MaxValue, ErrorMessage = "The specified percentag should be between -10 and infinity.")]
+        public double SalaryIncreasePercentage { get; set; } = 0;
+    }
+}

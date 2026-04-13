@@ -1,0 +1,16 @@
+﻿@page "/simulationtime"
+@rendermode InteractiveServer
+
+<PageTitle>Simulation time</PageTitle>
+
+<h1>Simulation time</h1>
+
+<p role="status">Time: @simulationTime.ToString()</p>
+
+
+
+
+@code {
+    private DatesAndStuff.SimulationTime simulationTime = new (DateTime.Now);
+
+}

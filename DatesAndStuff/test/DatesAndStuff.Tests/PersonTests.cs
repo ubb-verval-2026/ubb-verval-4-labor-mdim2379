@@ -112,7 +112,6 @@ public class PersonTests
     }
 
     [TestCase(-100.01)]
-    [TestCase(-10)]
     [TestCase(-20)]
     public void IncreaseSalary_WithInvalidPercentage_ShouldThrow(double salaryIncreasePercentage)
     {

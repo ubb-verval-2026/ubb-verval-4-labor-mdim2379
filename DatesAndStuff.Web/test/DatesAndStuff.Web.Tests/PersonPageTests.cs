@@ -160,6 +160,50 @@ public class PersonPageTests
         flightRows.Count.Should().BeGreaterThanOrEqualTo(3);
     }
 
+    [Test]
+    public void BlazeDemo_FindCheapFlights_ShouldTakeScreenshot()
+    {
+        driver.Navigate().GoToUrl("https://blazedemo.com/");
+
+        new SelectElement(driver.FindElement(By.Name("fromPort"))).SelectByText("Mexico City");
+        new SelectElement(driver.FindElement(By.Name("toPort"))).SelectByText("Dublin");
+
+        driver.FindElement(By.XPath("//input[@value='Find Flights']")).Click();
+
+        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+        wait.Until(ExpectedConditions.ElementExists(By.TagName("table")));
+
+        double maxPrice = 400.00;
+        bool foundCheapFlight = false;
+
+        var flightRows = driver.FindElements(By.XPath("//table/tbody/tr"));
+
+        foreach (var row in flightRows)
+        {
+            var priceText = row.FindElement(By.XPath("./td[6]")).Text;
+
+            var priceValue = double.Parse(priceText.Replace("$", ""), System.Globalization.CultureInfo.InvariantCulture);
+
+            if (priceValue < maxPrice)
+            {
+                foundCheapFlight = true;
+                break;
+            }
+        }
+
+        if (foundCheapFlight)
+        {
+            ITakesScreenshot camera = (ITakesScreenshot)driver;
+            Screenshot screenshot = camera.GetScreenshot();
+
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string fileName = $"BlazeDemo_OlcsoJarat_{DateTime.Now:yyyyMMdd_HHmmss}.png";
+            string filePath = Path.Combine(desktopPath, fileName);
+
+            screenshot.SaveAsFile(filePath);
+        }
+    }
+
     private bool IsElementPresent(By by)
     {
         try

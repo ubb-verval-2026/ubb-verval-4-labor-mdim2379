@@ -124,6 +124,37 @@ public class PersonPageTests
 
         salaryAfterSubmission.Should().BeApproximately(expectedSalary, 0.001);
     }
+
+    [Test]
+    [TestCase(-10)]
+    [TestCase(-20)]
+    [TestCase(-30)]
+    public void SalaryInput_BelowMinimum_ShowsValidationErrors(int percentage)
+    {
+        // Arrange
+        driver.Navigate().GoToUrl(BaseURL);
+        driver.FindElement(By.XPath("//*[@data-test='PersonPageNavigation']")).Click();
+
+        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+
+        var input = wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@data-test='SalaryIncreasePercentageInput']")));
+
+        // Act
+        input.Clear();
+        input.SendKeys(percentage.ToString());
+
+        var submitButton = driver.FindElement(By.XPath("//*[@data-test='SalaryIncreaseSubmitButton']"));
+        submitButton.Click();
+
+        // Assert
+        var summaryError = wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("ul.validation-errors li.validation-message")));
+        summaryError.Text.Should().Be("The specified percentag should be between -10 and infinity.");
+
+        var inlineError = driver.FindElement(By.CssSelector("div.col-md-10 div.validation-message"));
+        inlineError.Text.Should().Be("The specified percentag should be between -10 and infinity.");
+    }
+
+
     private bool IsElementPresent(By by)
     {
         try

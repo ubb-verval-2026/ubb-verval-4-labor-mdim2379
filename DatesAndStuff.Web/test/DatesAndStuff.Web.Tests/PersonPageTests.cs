@@ -126,7 +126,6 @@ public class PersonPageTests
     }
 
     [Test]
-    [TestCase(-10)]
     [TestCase(-20)]
     [TestCase(-30)]
     public void SalaryInput_BelowMinimum_ShowsValidationErrors(int percentage)

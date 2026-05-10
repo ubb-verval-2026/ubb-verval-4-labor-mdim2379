@@ -1,12 +1,11 @@
-using System;
-using System.Diagnostics;
-using System.Reflection;
-using System.Text;
 using FluentAssertions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.WaitHelpers;
+using System.Diagnostics;
+using System.Reflection;
+using System.Text;
 
 namespace DatesAndStuff.Web.Tests;
 
@@ -34,7 +33,6 @@ public class PersonPageTests
         {
             FileName = "dotnet",
             //Arguments = $"run --project \"{webProjectPath}\"",
-            Arguments = "dotnet run --no-build",
             WorkingDirectory = webProjFolderPath,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -43,7 +41,6 @@ public class PersonPageTests
 
         _blazorProcess = Process.Start(startInfo);
 
-        // Wait for the app to become available
         var client = new HttpClient();
         var timeout = TimeSpan.FromSeconds(30);
         var start = DateTime.Now;
@@ -103,7 +100,6 @@ public class PersonPageTests
     [TestCase(20, 6000)]
     public void Person_SalaryIncrease_ShouldIncrease(int percentage, double expectedSalary)
     {
-        // Arrange
         driver.Navigate().GoToUrl(BaseURL);
         driver.FindElement(By.XPath("//*[@data-test='PersonPageNavigation']")).Click();
 
@@ -113,13 +109,10 @@ public class PersonPageTests
         input.Clear();
         input.SendKeys(percentage.ToString());
 
-        // Act
         var submitButton = wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@data-test='SalaryIncreaseSubmitButton']")));
         submitButton.Click();
 
-        // Assert
         var salaryLabel = wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@data-test='DisplayedSalary']")));
-
         var salaryAfterSubmission = double.Parse(salaryLabel.Text, System.Globalization.CultureInfo.InvariantCulture);
 
         salaryAfterSubmission.Should().BeApproximately(expectedSalary, 0.001);
@@ -130,29 +123,42 @@ public class PersonPageTests
     [TestCase(-30)]
     public void SalaryInput_BelowMinimum_ShowsValidationErrors(int percentage)
     {
-        // Arrange
         driver.Navigate().GoToUrl(BaseURL);
         driver.FindElement(By.XPath("//*[@data-test='PersonPageNavigation']")).Click();
 
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
-
         var input = wait.Until(ExpectedConditions.ElementExists(By.XPath("//*[@data-test='SalaryIncreasePercentageInput']")));
 
-        // Act
         input.Clear();
         input.SendKeys(percentage.ToString());
 
         var submitButton = driver.FindElement(By.XPath("//*[@data-test='SalaryIncreaseSubmitButton']"));
         submitButton.Click();
 
-        // Assert
         var summaryError = wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector("ul.validation-errors li.validation-message")));
         summaryError.Text.Should().Be("The specified percentag should be between -10 and infinity.");
 
         var inlineError = driver.FindElement(By.CssSelector("div.col-md-10 div.validation-message"));
         inlineError.Text.Should().Be("The specified percentag should be between -10 and infinity.");
     }
+    [Test]
+    public void BlazeDemo_FindFlights_ShouldSucceed()
+    {
+        driver.Navigate().GoToUrl("https://blazedemo.com/");
+        driver.FindElement(By.XPath("(.//*[normalize-space(text()) and normalize-space(.)='destination of the week! The Beach!'])[1]/following::div[1]")).Click();
 
+        new SelectElement(driver.FindElement(By.Name("fromPort"))).SelectByText("Mexico City");
+        new SelectElement(driver.FindElement(By.Name("toPort"))).SelectByText("Dublin");
+
+        driver.FindElement(By.XPath("//input[@value='Find Flights']")).Click();
+
+        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+        wait.Until(ExpectedConditions.ElementExists(By.TagName("table")));
+
+        var flightRows = driver.FindElements(By.XPath("//table/tbody/tr"));
+
+        flightRows.Count.Should().BeGreaterThanOrEqualTo(3);
+    }
 
     private bool IsElementPresent(By by)
     {

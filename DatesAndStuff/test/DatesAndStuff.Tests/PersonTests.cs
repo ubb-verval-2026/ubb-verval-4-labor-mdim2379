@@ -110,4 +110,17 @@ public class PersonTests
     {
         // throw new NotImplementedException();
     }
+
+    [TestCase(-100.01)]
+    [TestCase(-20)]
+    public void IncreaseSalary_WithInvalidPercentage_ShouldThrow(double salaryIncreasePercentage)
+    {
+        // Arrange
+        Person sut = PersonFactory.CreateTestPerson();
+        // Act
+        var task = Task.Run(() => sut.IncreaseSalary(salaryIncreasePercentage));
+        try { task.Wait(); } catch { }
+        // Assert
+        Assert.IsTrue(task.IsFaulted);
+    }
 }
